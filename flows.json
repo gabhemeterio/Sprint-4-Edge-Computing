@@ -1,0 +1,219 @@
+[
+    {
+        "id": "b95c277c3edd0eb6",
+        "type": "tab",
+        "label": "Passa Bola IoT",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "fe88be12ca757690",
+        "type": "mqtt in",
+        "z": "b95c277c3edd0eb6",
+        "name": "Jogadora 1 - MQTT IN",
+        "topic": "passabola/jogadora1",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "a03def0bf21dea4a",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "4a4ab15b71e750b8"
+            ]
+        ]
+    },
+    {
+        "id": "1e55b45a84be1fa2",
+        "type": "mqtt in",
+        "z": "b95c277c3edd0eb6",
+        "name": "Jogadora 2 - MQTT IN",
+        "topic": "passabola/jogadora2",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "a03def0bf21dea4a",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 220,
+        "wires": [
+            [
+                "931b931f0e82d1d2"
+            ]
+        ]
+    },
+    {
+        "id": "4a4ab15b71e750b8",
+        "type": "json",
+        "z": "b95c277c3edd0eb6",
+        "name": "JSON J1",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 330,
+        "y": 140,
+        "wires": [
+            [
+                "ce06f6f5334b6d77"
+            ]
+        ]
+    },
+    {
+        "id": "931b931f0e82d1d2",
+        "type": "json",
+        "z": "b95c277c3edd0eb6",
+        "name": "JSON J2",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 330,
+        "y": 220,
+        "wires": [
+            [
+                "299757ddf88d9c2d"
+            ]
+        ]
+    },
+    {
+        "id": "ce06f6f5334b6d77",
+        "type": "function",
+        "z": "b95c277c3edd0eb6",
+        "name": "Calcular J1",
+        "func": "let v = msg.payload.velocidade || 0;\nlet bpm = msg.payload.bpm || 0;\nlet kcal = msg.payload.kcal || 0;\nlet dist = msg.payload.distancia_km || 0;\nlet tempo = msg.payload.tempo_s || 0;\n\nlet tempoMin = tempo / 60;\n\nlet nBPM = Math.min(Math.max((bpm - 90) / 100 * 100, 0), 100);\nlet nVel = Math.min(Math.max((v - 4) / 16 * 100, 0), 100);\nlet nKcal = Math.min(Math.max((kcal / 500) * 100, 0), 100);\nlet nDist = Math.min(Math.max((dist / 5) * 100, 0), 100);\n\nlet pontos = (nBPM * 0.3) + (nVel * 0.25) + (nKcal * 0.25) + (nDist * 0.2);\n\nmsg.payload = {\n  jogadora: \"1\",\n  bpm,\n  velocidade: v,\n  kcal,\n  distancia_km: dist,\n  tempo_s: tempo,\n  tempo_min: Number(tempoMin.toFixed(1)),\n  pontos: Number(pontos.toFixed(2))\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 140,
+        "wires": [
+            [
+                "3e6429b740bfcd43"
+            ]
+        ]
+    },
+    {
+        "id": "299757ddf88d9c2d",
+        "type": "function",
+        "z": "b95c277c3edd0eb6",
+        "name": "Calcular J2",
+        "func": "let v = msg.payload.velocidade || 0;\nlet bpm = msg.payload.bpm || 0;\nlet kcal = msg.payload.kcal || 0;\nlet dist = msg.payload.distancia_km || 0;\nlet tempo = msg.payload.tempo_s || 0;\n\nlet tempoMin = tempo / 60;\n\nlet nBPM = Math.min(Math.max((bpm - 90) / 100 * 100, 0), 100);\nlet nVel = Math.min(Math.max((v - 4) / 16 * 100, 0), 100);\nlet nKcal = Math.min(Math.max((kcal / 500) * 100, 0), 100);\nlet nDist = Math.min(Math.max((dist / 5) * 100, 0), 100);\n\nlet pontos = (nBPM * 0.3) + (nVel * 0.25) + (nKcal * 0.25) + (nDist * 0.2);\n\nmsg.payload = {\n  jogadora: \"2\",\n  bpm,\n  velocidade: v,\n  kcal,\n  distancia_km: dist,\n  tempo_s: tempo,\n  tempo_min: Number(tempoMin.toFixed(1)),\n  pontos: Number(pontos.toFixed(2))\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 220,
+        "wires": [
+            [
+                "3e6429b740bfcd43"
+            ]
+        ]
+    },
+    {
+        "id": "3e6429b740bfcd43",
+        "type": "function",
+        "z": "b95c277c3edd0eb6",
+        "name": "Combinar jogadoras",
+        "func": "let d = msg.payload;\n\nlet j1 = flow.get('j1') || null;\nlet j2 = flow.get('j2') || null;\n\nif (d.jogadora === \"1\") {\n  j1 = d;\n  flow.set('j1', j1);\n} else if (d.jogadora === \"2\") {\n  j2 = d;\n  flow.set('j2', j2);\n}\n\nlet rankingTexto = \"Aguardando dados das duas jogadoras...\";\n\nif (j1 && j2) {\n  let p1 = Number(j1.pontos || 0);\n  let p2 = Number(j2.pontos || 0);\n\n  if (p1 > p2) {\n    rankingTexto =\n      \"1º Jogadora 1 - \" + p1.toFixed(2) + \" pts\\n\" +\n      \"2º Jogadora 2 - \" + p2.toFixed(2) + \" pts\";\n  } else if (p2 > p1) {\n    rankingTexto =\n      \"1º Jogadora 2 - \" + p2.toFixed(2) + \" pts\\n\" +\n      \"2º Jogadora 1 - \" + p1.toFixed(2) + \" pts\";\n  } else {\n    rankingTexto =\n      \"Empate - \" + p1.toFixed(2) + \" pts para cada\";\n  }\n}\n\nmsg.payload = {\n  j1,\n  j2,\n  rankingTexto\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 180,
+        "wires": [
+            [
+                "e5121f290efdd025"
+            ]
+        ]
+    },
+    {
+        "id": "e5121f290efdd025",
+        "type": "ui_template",
+        "z": "b95c277c3edd0eb6",
+        "group": "group_passa_bola",
+        "name": "Passa a Bola – Dashboard",
+        "order": 1,
+        "width": 12,
+        "height": 16,
+        "format": "<style>\n.nr-dashboard-cardcontainer,\n.nr-dashboard-cardpanel {\n  max-width: 100% !important;\n  width: 100% !important;\n  margin: 0 !important;\n}\n.pb-root {\n  position: fixed; \n  inset: 0;\n  margin: 0;\n  padding: 12px 32px;\n  box-sizing: border-box;\n  font-family: 'Poppins','Segoe UI',sans-serif;\n  background: linear-gradient(180deg,#ffb6db,#ffe7f3);\n  z-index: 1;    \n\n.pb-shell {\n  display: flex;\n  height: 100%;\n}\n.pb-sidebar {\n  width: 90px;\n  background: #fff;\n  border-radius: 24px;\n  margin-right: 16px;\n  padding: 20px 10px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  box-shadow: 0 4px 16px rgba(0,0,0,0.06);\n}\n.pb-nav-item {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  margin: 14px 0;\n  font-size: 11px;\n  color: #4a4a4a;\n}\n.pb-nav-icon {\n  width: 34px;\n  height: 34px;\n  border-radius: 50%;\n  background: #ffe4f2;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-bottom: 4px;\n}\n.pb-main {\n  flex: 1;\n  border-radius: 24px;\n  background: linear-gradient(90deg,#ff9acb,#ffcde6);\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n.pb-header {\n  padding: 16px 28px;\n  color: #4a004e;\n  font-weight: 500;\n  font-size: 18px;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.pb-tag {\n  background: #ffeef7;\n  border-radius: 999px;\n  padding: 4px 14px;\n  font-size: 11px;\n  box-shadow: 0 2px 6px rgba(0,0,0,0.05);\n}\n.pb-content {\n  flex: 1;\n  background: #fff;\n  border-radius: 24px 24px 0 0;\n  padding: 20px 24px 24px 24px;\n  display: grid;\n  grid-template-columns: 2fr 1.4fr;\n  grid-gap: 20px;\n  overflow: auto;\n}\n.pb-section-title {\n  font-size: 18px;\n  font-weight: 600;\n  color: #4a004e;\n  margin-bottom: 12px;\n}\n.pb-card-player {\n  background: linear-gradient(135deg,#ffc1e3 0%,#f8bbd0 100%);\n  border-radius: 20px;\n  padding: 14px 16px;\n  margin-bottom: 16px;\n  color: #4a004e;\n  box-shadow: 0 4px 10px rgba(0,0,0,0.05);\n}\n.pb-card-player.pb-second {\n  background: linear-gradient(135deg,#e1bee7 0%,#f3e5f5 100%);\n}\n.pb-card-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 8px;\n}\n.pb-pill {\n  font-size: 11px;\n  padding: 4px 8px;\n  border-radius: 999px;\n  background: rgba(255,255,255,0.9);\n}\n.pb-grid-2 {\n  display: grid;\n  grid-template-columns: repeat(2,1fr);\n  grid-gap: 4px 14px;\n  font-size: 12px;\n  margin-bottom: 8px;\n}\n.pb-gauge-row {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 14px;\n  margin-top: 6px;\n}\n.pb-gauge {\n  width: 80px;\n  text-align: center;\n}\n.pb-gauge-circle {\n  --pct: 0;\n  width: 64px;\n  height: 64px;\n  border-radius: 50%;\n  background: conic-gradient(#f06292 calc(var(--pct)*1%), #fce4ec 0);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 auto 4px auto;\n  box-shadow: 0 2px 6px rgba(0,0,0,0.08);\n}\n.pb-gauge-inner {\n  width: 48px;\n  height: 48px;\n  border-radius: 50%;\n  background: #fff;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  font-size: 11px;\n  color: #4a004e;\n}\n.pb-gauge-value {\n  font-weight: 600;\n  font-size: 13px;\n}\n.pb-gauge-label {\n  font-size: 10px;\n}\n.pb-gauge-caption {\n  font-size: 11px;\n}\n.pb-ranking-card {\n  background: linear-gradient(135deg,#f06292,#f8bbd0);\n  border-radius: 20px;\n  padding: 14px 16px;\n  color: #fff;\n  box-shadow: 0 4px 10px rgba(0,0,0,0.08);\n  white-space: pre-line;\n  font-size: 14px;\n}\n.pb-hint {\n  margin-top: 10px;\n  font-size: 11px;\n  color: #6a1b46;\n  opacity: 0.85;\n}\n</style>\n\n<div class=\"pb-root\">\n  <div class=\"pb-shell\">\n\n    <div class=\"pb-sidebar\">\n      <div class=\"pb-nav-item\">\n        <div class=\"pb-nav-icon\">🏠</div><span>página inicial</span>\n      </div>\n      <div class=\"pb-nav-item\">\n        <div class=\"pb-nav-icon\">🎮</div><span>jogos</span>\n      </div>\n      <div class=\"pb-nav-item\">\n        <div class=\"pb-nav-icon\">🛡</div><span>meu time</span>\n      </div>\n      <div class=\"pb-nav-item\">\n        <div class=\"pb-nav-icon\">👤</div><span>perfil</span>\n      </div>\n    </div>\n\n    <div class=\"pb-main\">\n      <div class=\"pb-header\">\n        <div>Próximo jogo • Monitor IoT</div>\n        <div class=\"pb-tag\">Passa a Bola</div>\n      </div>\n\n      <div class=\"pb-content\">\n        <div>\n          <div class=\"pb-section-title\">Desempenho em tempo real</div>\n\n          <div ng-if=\"msg.payload.j1\" class=\"pb-card-player\">\n            <div class=\"pb-card-header\">\n              <div>👩🏼 Jogadora 1</div>\n              <div class=\"pb-pill\">\n                Pontos: <b>{{msg.payload.j1.pontos | number:2}}</b>\n              </div>\n            </div>\n\n            <div class=\"pb-grid-2\">\n              <div><b>BPM:</b> {{msg.payload.j1.bpm}}</div>\n              <div><b>Velocidade:</b> {{msg.payload.j1.velocidade | number:1}} km/h</div>\n              <div><b>Kcal:</b> {{msg.payload.j1.kcal | number:1}}</div>\n              <div><b>Distância:</b> {{msg.payload.j1.distancia_km | number:2}} km</div>\n            </div>\n            <div><b>Tempo:</b> {{msg.payload.j1.tempo_min | number:1}} min</div>\n\n            <div class=\"pb-gauge-row\">\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ (msg.payload.j1.bpm - 90)/100*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j1.bpm}}</div>\n                    <div class=\"pb-gauge-label\">BPM</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">esforço</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ (msg.payload.j1.velocidade-4)/16*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j1.velocidade | number:1}}</div>\n                    <div class=\"pb-gauge-label\">km/h</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">velocidade</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j1.kcal/5 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j1.kcal | number:0}}</div>\n                    <div class=\"pb-gauge-label\">kcal</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">energia</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j1.distancia_km/5*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j1.distancia_km | number:2}}</div>\n                    <div class=\"pb-gauge-label\">km</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">distância</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j1.tempo_min/90*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j1.tempo_min | number:1}}</div>\n                    <div class=\"pb-gauge-label\">min</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">tempo</div>\n              </div>\n            </div>\n          </div>\n\n          <div ng-if=\"msg.payload.j2\" class=\"pb-card-player pb-second\">\n            <div class=\"pb-card-header\">\n              <div>👩🏽 Jogadora 2</div>\n              <div class=\"pb-pill\">\n                Pontos: <b>{{msg.payload.j2.pontos | number:2}}</b>\n              </div>\n            </div>\n\n            <div class=\"pb-grid-2\">\n              <div><b>BPM:</b> {{msg.payload.j2.bpm}}</div>\n              <div><b>Velocidade:</b> {{msg.payload.j2.velocidade | number:1}} km/h</div>\n              <div><b>Kcal:</b> {{msg.payload.j2.kcal | number:1}}</div>\n              <div><b>Distância:</b> {{msg.payload.j2.distancia_km | number:2}} km</div>\n            </div>\n            <div><b>Tempo:</b> {{msg.payload.j2.tempo_min | number:1}} min</div>\n\n            <div class=\"pb-gauge-row\">\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ (msg.payload.j2.bpm - 90)/100*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j2.bpm}}</div>\n                    <div class=\"pb-gauge-label\">BPM</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">esforço</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ (msg.payload.j2.velocidade-4)/16*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j2.velocidade | number:1}}</div>\n                    <div class=\"pb-gauge-label\">km/h</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">velocidade</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j2.kcal/5 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j2.kcal | number:0}}</div>\n                    <div class=\"pb-gauge-label\">kcal</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">energia</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j2.distancia_km/5*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j2.distancia_km | number:2}}</div>\n                    <div class=\"pb-gauge-label\">km</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">distância</div>\n              </div>\n\n              <div class=\"pb-gauge\">\n                <div class=\"pb-gauge-circle\"\n                     style=\"--pct: {{ msg.payload.j2.tempo_min/90*100 | number:0 }}\">\n                  <div class=\"pb-gauge-inner\">\n                    <div class=\"pb-gauge-value\">{{msg.payload.j2.tempo_min | number:1}}</div>\n                    <div class=\"pb-gauge-label\">min</div>\n                  </div>\n                </div>\n                <div class=\"pb-gauge-caption\">tempo</div>\n              </div>\n            </div>\n          </div>\n\n          <div class=\"pb-hint\">\n            Assim que os dispositivos começarem a enviar dados, os cards e os círculos se atualizam em tempo real.\n          </div>\n        </div>\n\n        <div>\n          <div class=\"pb-section-title\">Ranking da partida</div>\n          <div class=\"pb-ranking-card\">\n            {{msg.payload.rankingTexto}}\n          </div>\n        </div>\n      </div>\n\n    </div>\n  </div>\n</div>",
+        "storeOutMessages": false,
+        "fwdInMessages": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 990,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a03def0bf21dea4a",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "broker.hivemq.com",
+        "port": 1883,
+        "clientid": "node-red-passabola",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "group_passa_bola",
+        "type": "ui_group",
+        "name": "Dashboard",
+        "tab": "ui_tab_passa_a_bola",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ui_tab_passa_a_bola",
+        "type": "ui_tab",
+        "name": "Passa a Bola",
+        "icon": "fa-futbol-o",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "f313271962ae1cd7",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
